@@ -55,3 +55,6 @@ Makefile
 
 # Output
 Clicorn
+include/config.h
+include/config.h.in
+include/stamp-h1
