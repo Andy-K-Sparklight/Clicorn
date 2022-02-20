@@ -178,6 +178,13 @@ void appendFileSyncHandler(const char *seq, const char *req, void *arg)
     cJSON_Delete(argv);
 }
 
+void getUserHomeHandler(const char *seq, const char *req, void *arg)
+{
+    char *home = getUserHome();
+    webview_return(arg, seq, 0, home);
+    free(home);
+}
+
 void printHandler(const char *seq, const char *req, void *arg)
 // print(msg: string): Promise<void>
 {
@@ -210,6 +217,7 @@ void bindAll(webview_t w)
     webview_bind(w, "_readFileSync", readFileSyncHandler, w);
     webview_bind(w, "_writeFileSync", writeFileSyncHandler, w);
     webview_bind(w, "_appendFileSync", appendFileSyncHandler, w);
+    webview_bind(w, "_getUserHome", getUserHomeHandler, w);
 
     // App
     webview_bind(w, "_resize", resizeHandler, w);
