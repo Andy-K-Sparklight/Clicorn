@@ -49,4 +49,10 @@ Get the size of a file.
 Return the original size of the file, or -1 if something is wrong.
 */
 long getFileSize(int fd);
+
+/*
+Get the home of the user.
+*/
+char *getUserHome(void);
+
 #endif

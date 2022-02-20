@@ -127,3 +127,10 @@ long getFileSize(int fd)
         return -1L;
     }
 }
+
+char *getUserHome(void)
+{
+    char *homedir = malloc(4096);
+    snprintf(homedir, 4096, "%s", getenv("HOME"));
+    return homedir;
+}
