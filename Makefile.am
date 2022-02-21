@@ -1,5 +1,21 @@
 bin_PROGRAMS=Clicorn
-Clicorn_SOURCES=src/main.c src/cJSON/cJSON.c src/webview/webview.cc src/binds/bind.c src/binds/err.c src/binds/fs.c  src/binds/app.c src/binds/z.c src/binds/os.c
-Clicorn_CXXFLAGS=-I$(top_srcdir)/include ${libs_CFLAGS}
-Clicorn_CPPFLAGS=-I$(top_srcdir)/include ${libs_CFLAGS}
-Clicorn_LDADD=${libs_LIBS} -lstdc++
+Clicorn_SOURCES=src/main.c src/cJSON/cJSON.c src/webview/webview.cc src/binds/bind.c src/binds/fs.c  src/binds/app.c src/binds/z.c src/binds/os.c
+
+if WINDOWS
+    Clicorn_CXXFLAGS=-I$(top_srcdir)/include -mwindows -L./dll/x64
+else
+    Clicorn_CXXFLAGS=-I$(top_srcdir)/include ${libs_CFLAGS}
+endif
+
+if WINDOWS
+    Clicorn_CPPFLAGS=-I$(top_srcdir)/include
+else
+    Clicorn_CPPFLAGS=-I$(top_srcdir)/include ${libs_CFLAGS}
+endif
+
+if WINDOWS
+    Clicorn_LDADD=-lwebview -lWebView2Loader
+else
+    Clicorn_LDADD=${libs_LIBS} -lstdc++
+endif
+

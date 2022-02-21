@@ -6,6 +6,7 @@
 
 #ifdef WIN32
 #include <direct.h>
+#include <windows.h>
 #else
 #include <gtk/gtk.h>
 #include <sys/stat.h>

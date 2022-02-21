@@ -5,6 +5,27 @@ AC_PREREQ([2.69])
 AC_INIT([Clicorn], [1.0.0], [Twilight_Princess_Sparkle@outlook.com])
 AC_CONFIG_SRCDIR([src])
 AC_CONFIG_HEADERS([include/config.h])
+AC_CANONICAL_HOST
+
+build_linux=no
+build_windows=no
+
+case "${host_os}" in
+    linux*)
+        build_linux=yes
+        PKG_CHECK_MODULES([libs], [gtk+-3.0, webkit2gtk-4.0, liblzma, zlib])
+        ;;
+    cygwin*|mingw*)
+        build_windows=yes
+        ;;
+    *)
+        AC_MSG_ERROR(["OS $host_os is not supported"])
+        ;;
+esac
+
+AM_CONDITIONAL([LINUX], [test "$build_linux" = "yes"])
+AM_CONDITIONAL([WINDOWS], [test "$build_windows" = "yes"])
+
 AM_INIT_AUTOMAKE([foreign subdir-objects -Wall])
 
 # Checks for programs.
@@ -27,6 +48,5 @@ AC_FUNC_MALLOC
 AC_FUNC_REALLOC
 AC_FUNC_STRTOD
 AC_CHECK_FUNCS([localeconv memset strerror strstr])
-PKG_CHECK_MODULES([libs], [gtk+-3.0, webkit2gtk-4.0, liblzma, zlib])
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
