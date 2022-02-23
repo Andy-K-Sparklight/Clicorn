@@ -53,8 +53,16 @@ Makefile
 .deps
 .dirstamp
 
+# Config
+settings.json
+
 # Output
 Clicorn
+Clicorn.exe
 include/config.h
 include/config.h.in
 include/stamp-h1
+webview.dll.h
+WebView2Loader.dll.h
+Clicorn.exe.h
+AlicornPE.exe
