@@ -147,7 +147,11 @@ long getFileSize(int fd)
 char *getUserHome(void)
 {
     char *homedir = malloc(PATH_MAX * sizeof(char));
+#ifdef WIN32
+    snprintf(homedir, PATH_MAX * sizeof(char), "%s", getenv("USERPROFILE"));
+#else
     snprintf(homedir, PATH_MAX * sizeof(char), "%s", getenv("HOME"));
+#endif
     return homedir;
 }
 
