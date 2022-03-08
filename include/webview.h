@@ -96,10 +96,7 @@ extern "C"
   // receives a request string and a user-provided argument pointer. Request
   // string is a JSON array of all the arguments passed to the JavaScript
   // function.
-  WEBVIEW_API void webview_bind(webview_t w, const char *name,
-                                void (*fn)(const char *seq, const char *req,
-                                           void *arg),
-                                void *arg);
+  WEBVIEW_API void webview_bind(webview_t w, const char *name, void (*fn)(const char *seq, const char *req, void *arg), void *arg);
 
   // Allows to return a value from the native binding. Original request pointer
   // must be provided to help internal RPC engine match requests with responses.

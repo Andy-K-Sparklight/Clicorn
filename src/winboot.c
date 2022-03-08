@@ -4,6 +4,8 @@
 #include "Clicorn.exe.h"
 #include "webview.dll.h"
 #include "WebView2Loader.dll.h"
+#include "libcurl.dll.h"
+#include "libwinpthread_1.dll.h"
 
 #ifdef WIN32
 
@@ -33,6 +35,18 @@ int main()
     {
         FILE *f = fopen("WebView2Loader.dll", "wb");
         fwrite(WebView2Loader_dll, sizeof(WebView2Loader_dll), 1, f);
+        fclose(f);
+    }
+    if (access("libcurl-x64.dll", F_OK) != 0)
+    {
+        FILE *f = fopen("libcurl-x64.dll", "wb");
+        fwrite(libcurl_dll, sizeof(libcurl_dll), 1, f);
+        fclose(f);
+    }
+    if (access("libwinpthread-1.dll", F_OK) != 0)
+    {
+        FILE *f = fopen("libwinpthread-1.dll", "wb");
+        fwrite(libwinpthread_1_dll, sizeof(libwinpthread_1_dll), 1, f);
         fclose(f);
     }
     system("Clicorn.exe");
