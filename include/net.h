@@ -21,7 +21,7 @@ void downloadFile(char *url, char *savePath, int timeout, void (*fn)(int status,
 
 typedef struct
 {
-    int statusCode;
+    long statusCode;
     void *body;
     size_t bodyLength;
 } Response;

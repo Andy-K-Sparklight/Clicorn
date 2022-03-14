@@ -304,9 +304,9 @@ void openExternalHandler(const char *seq, const char *req, void *arg)
     cJSON *e = cJSON_GetArrayItem(argv, 0);
     char *u = malloc((strlen(e->valuestring) + 16) * sizeof(char));
 #ifdef WIN32
-    sprintf(u, "start %s", e->valuestring);
+    sprintf(u, "start \"%s\"", e->valuestring);
 #else
-    sprintf(u, "xdg-open %s", e->valuestring);
+    sprintf(u, "xdg-open \"%s\"", e->valuestring);
 #endif
     if (system(u) != 0)
     {
@@ -333,7 +333,6 @@ void getModificationTimeHandler(const char *seq, const char *req, void *arg)
     else
     {
         sprintf(tm, "`%s`", md);
-        free(md);
         webview_return(arg, seq, 0, tm);
     }
     cJSON_Delete(argv);
@@ -434,17 +433,19 @@ void closeWindowHandler(const char *seq, const char *req, void *arg)
     webview_return(arg, seq, 0, "\"\"");
     webview_terminate(arg);
 }
-void downloadFileCallback(int status, char *seq, void *arg)
+static void downloadFileCallback(int status, char *seq, void *arg)
 {
-    char out[16];
-    sprintf(out, "\"%d\"", status);
     if (status == 0)
     {
-        webview_return(arg, seq, 0, out);
+        webview_return(arg, seq, 0, "\"OK\"");
+    }
+    else if (status == -1)
+    {
+        webview_return(arg, seq, 0, "\"FATAL\"");
     }
     else
     {
-        webview_return(arg, seq, 1, out);
+        webview_return(arg, seq, 1, "\"\"");
     }
     free(seq);
 }
@@ -460,22 +461,23 @@ void downloadFileHandler(const char *seq, const char *req, void *arg)
     char *seq0 = malloc((strlen(seq) + 1) * sizeof(char));
     strcpy(u, url->valuestring);
     strcpy(sp, savePath->valuestring);
+    strcpy(seq0, seq);
     downloadFile(u, sp, timeout->valueint, downloadFileCallback, seq0, arg);
     cJSON_Delete(argv);
 }
-void netGetCallback(Response *res, char *seq, void *arg)
+static void netGetCallback(Response *res, char *seq, void *arg)
 {
     if (res->body == NULL)
     {
         char outStr[64];
-        sprintf(outStr, "\"GET failed, err code: %d\"", res->statusCode);
+        sprintf(outStr, "\"GET failed, err code: %ld\"", res->statusCode);
         webview_return(arg, seq, 1, outStr);
     }
     else
     {
         char *ebd = b64_encode(res->body, res->bodyLength);
         char *output = malloc((strlen(ebd) + 32) * sizeof(char));
-        sprintf(output, "{status:%d,body:\"%s\"}", res->statusCode, ebd);
+        sprintf(output, "{status:%ld,body:\"%s\"}", res->statusCode, ebd);
         free(res->body);
         free(ebd);
         webview_return(arg, seq, 0, output);
@@ -501,19 +503,20 @@ void netGetHandler(const char *seq, const char *req, void *arg)
     cJSON_Delete(argv);
 }
 
-void netPostCallback(Response *res, char *seq, void *arg)
+static void netPostCallback(Response *res, char *seq, void *arg)
 {
     if (res->body == NULL)
     {
+        printf("POST FAILED!\n");
         char outStr[64];
-        sprintf(outStr, "\"POST failed, err code: %d\"", res->statusCode);
+        sprintf(outStr, "\"POST failed, err code: %ld\"", res->statusCode);
         webview_return(arg, seq, 1, outStr);
     }
     else
     {
         char *ebd = b64_encode(res->body, res->bodyLength);
         char *output = malloc((strlen(ebd) + 32) * sizeof(char));
-        sprintf(output, "{status:%d,body:\"%s\"}", res->statusCode, ebd);
+        sprintf(output, "{status:%ld,body:\"%s\"}", res->statusCode, ebd);
         free(res->body);
         free(ebd);
         webview_return(arg, seq, 0, output);
@@ -537,7 +540,7 @@ void netPostHandler(const char *seq, const char *req, void *arg)
     strcpy(seq0, seq);
     strcpy(u, url->valuestring);
     strcpy(hd, headers->valuestring);
-    strcpy(bd, headers->valuestring);
+    strcpy(bd, body->valuestring);
     netPost(u, hd, bd, timeout->valueint, netPostCallback, seq0, arg);
     cJSON_Delete(argv);
 }

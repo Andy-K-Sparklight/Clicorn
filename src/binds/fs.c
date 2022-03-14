@@ -214,7 +214,7 @@ char **readDirectory(const char *pt)
             continue;
         }
         int l = strlen(dir->d_name);
-        char *t = malloc(l * sizeof(char));
+        char *t = malloc((l + 1) * sizeof(char));
         strcpy(t, dir->d_name);
         out[i] = t;
         i++;

@@ -12,6 +12,7 @@
 
 #ifdef WIN32
 #include <windows.h>
+#include <winuser.h>
 #else
 #include <gtk/gtk.h>
 #endif
@@ -23,21 +24,28 @@ int extractSelf(void);
 int WINAPI WinMain(HINSTANCE hInt, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nCmdShow)
 {
 #else
-int main()
+int main(char **argv)
 {
 #endif
     printf("Initializing main window!\n");
-#ifdef WIN32
-    webview_t w = webview_create(0, NULL);
-#else
-    webview_t w = webview_create(1, NULL);
-#endif
-
-#ifndef WIN32
+    webview_t w;
+    if (argv[0] == "debug")
+    {
+        w = webview_create(1, NULL);
+    }
+    else
+    {
+        w = webview_create(0, NULL);
+    }
     void *nw = webview_get_window(w);
+#ifdef WIN32
+    LONG lExStyle = GetWindowLong(nw, GWL_EXSTYLE);
+    lExStyle &= ~(WS_EX_DLGMODALFRAME | WS_EX_CLIENTEDGE | WS_EX_STATICEDGE);
+    SetWindowLong(nw, GWL_EXSTYLE, lExStyle);
+    SetWindowPos(nw, NULL, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOOWNERZORDER);
+#else
     gtk_window_set_decorated(nw, FALSE);
 #endif
-    printf("Setting window title!\n");
     webview_set_title(w, "Clicorn (Alicorn PE)");
     webview_set_size(w, 960, 540, WEBVIEW_HINT_NONE);
     bindAll(w);
@@ -52,15 +60,38 @@ int main()
         entry = getEntryPoint();
     }
     printf("Found entry at %s\n", entry);
-    char url[4096];
-    sprintf(url, "file://%s", entry);
+    FILE *f = fopen(entry, "r");
     free(entry);
+    if (f == NULL)
+    {
+        printf("Cannot open entry, exit.\n");
+        exit(1);
+    }
+    if (fseek(f, 0, SEEK_END))
+    {
+        printf("Cannot fseek, exit.\n");
+        fclose(f);
+        exit(1);
+    }
+    long sz = ftell(f);
+    rewind(f);
+    unsigned char *buf = malloc(sz + 1);
+    long szr;
+    if (fread(buf, 1, sz, f) != sz)
+    {
+        printf("Cannot read entry, exit.\n");
+        fclose(f);
+        exit(1);
+    }
+    fclose(f);
+    buf[sz] = '\0';
     netInit();
     printf("Opening main window!\n");
-    webview_navigate(w, url);
+    webview_set_html(w, buf);
     webview_run(w);
-    netClean();
     webview_destroy(w);
+    free(buf);
+    netClean();
     return 0;
 }
 

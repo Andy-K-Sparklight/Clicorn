@@ -39,7 +39,7 @@ static void *runDownload(void *meta)
 
     curl_easy_setopt(curl_handle, CURLOPT_URL, m->url);
     curl_easy_setopt(curl_handle, CURLOPT_NOPROGRESS, 1L);
-    curl_easy_setopt(curl_handle, CURLOPT_TIMEOUT_MS, m->timeout);
+    curl_easy_setopt(curl_handle, CURLOPT_CONNECTTIMEOUT_MS, (long)m->timeout);
     curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, writeData);
     curl_easy_setopt(curl_handle, CURLOPT_TCP_KEEPALIVE, 1L);
     curl_easy_setopt(curl_handle, CURLOPT_FOLLOWLOCATION, 1L);
@@ -49,8 +49,27 @@ static void *runDownload(void *meta)
     {
         curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, f);
         CURLcode c = curl_easy_perform(curl_handle);
+        if (c != CURLE_OK)
+        {
+            m->fn(1, m->seq, m->arg); // 1: Curl Error (RETRY)
+        }
+        else
+        {
+
+            long statusCode;
+            curl_easy_getinfo(curl_handle, CURLINFO_RESPONSE_CODE, &statusCode);
+
+            if (statusCode < 200 || statusCode >= 300)
+            {
+
+                m->fn(-1, m->seq, m->arg); // -1: Unexpected status code (DO NOT RETRY)
+            }
+            else
+            {
+                m->fn(0, m->seq, m->arg); // 0: OK
+            }
+        }
         fclose(f);
-        m->fn(c, m->seq, m->arg);
     }
     else
     {
@@ -121,7 +140,7 @@ static void *runGet(void *req)
     cJSON_Delete(header);
     curl_easy_setopt(curl_handle, CURLOPT_URL, m->url);
     curl_easy_setopt(curl_handle, CURLOPT_NOPROGRESS, 1L);
-    curl_easy_setopt(curl_handle, CURLOPT_TIMEOUT_MS, (long)(m->timeout));
+    curl_easy_setopt(curl_handle, CURLOPT_CONNECTTIMEOUT_MS, (long)(m->timeout));
     curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, writeMemory);
     curl_easy_setopt(curl_handle, CURLOPT_TCP_KEEPALIVE, 1L);
     curl_easy_setopt(curl_handle, CURLOPT_FOLLOWLOCATION, 1L);
@@ -200,7 +219,7 @@ static void *runPost(void *req)
     cJSON_Delete(header);
     curl_easy_setopt(curl_handle, CURLOPT_URL, m->url);
     curl_easy_setopt(curl_handle, CURLOPT_NOPROGRESS, 1L);
-    curl_easy_setopt(curl_handle, CURLOPT_TIMEOUT_MS, (long)(m->timeout));
+    curl_easy_setopt(curl_handle, CURLOPT_CONNECTTIMEOUT_MS, (long)(m->timeout));
     curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, writeMemory);
     curl_easy_setopt(curl_handle, CURLOPT_TCP_KEEPALIVE, 1L);
     curl_easy_setopt(curl_handle, CURLOPT_FOLLOWLOCATION, 1L);
